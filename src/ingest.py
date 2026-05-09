@@ -41,8 +41,11 @@ def main() -> None:
         pdf_path = str(Path(__file__).parent.parent / "document.pdf")
 
     container = Container()
-    use_case = container.ingest_pdf_use_case()
 
+    print("Limpando base vetorial de todos os providers...")
+    container.clear_all_vector_repositories()
+
+    use_case = container.ingest_pdf_use_case()
     total = use_case.execute(pdf_path)
     print(f"Ingestion concluida: {total} chunks armazenados de '{pdf_path}'")
 

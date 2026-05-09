@@ -59,16 +59,20 @@ Os demais parametros ja possuem valores padrao adequados:
 
 O projeto inclui `document.pdf` de exemplo (empresa ficticia SuperTechIABrazil). Para usar um PDF proprio, substitua o arquivo `document.pdf` na raiz do projeto.
 
-## Execucao
+## Ordem de execucao
 
-### 1. Subir o banco de dados
+**1.** Subir o banco de dados:
 
 ```bash
 docker compose up -d
 ```
 
-### 2. Ingerir o PDF
+**2.** Executar ingestao do PDF:
 
+```bash
+python src/ingest.py
+```
+ou
 ```bash
 make ingest
 ```
@@ -81,8 +85,12 @@ venv/bin/python src/ingest.py caminho/para/arquivo.pdf
 
 > **Nota:** cada provider usa sua propria colecao no pgVector (`pdf_search_chunks_openai` ou `pdf_search_chunks_gemini`). Se trocar de provider, rode a ingestion novamente.
 
-### 3. Rodar o chat interativo
+**3.** Rodar o chat:
 
+```bash
+python src/chat.py
+```
+ou
 ```bash
 make chat
 ```

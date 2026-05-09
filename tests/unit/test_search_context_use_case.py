@@ -74,15 +74,16 @@ class TestSearchContext:
         assert "Segundo trecho." in prompt_arg
 
     def test_handles_empty_search_results(self):
-        """Deve funcionar mesmo quando nao ha resultados de busca (contexto vazio)."""
+        """Deve retornar resposta padrao sem chamar o LLM quando nao ha resultados relevantes."""
         use_case, _, mock_llm_repo = _make_use_case(search_results=[])
-        use_case.execute("pergunta sem contexto")
-        # LLM deve ser chamado mesmo com contexto vazio
-        mock_llm_repo.generate.assert_called_once()
+        result = use_case.execute("pergunta sem contexto")
+        mock_llm_repo.generate.assert_not_called()
+        assert result == "Nao tenho informacoes necessarias para responder sua pergunta."
 
     def test_question_included_in_prompt(self):
         """Deve incluir a pergunta do usuario no prompt enviado ao LLM."""
-        use_case, _, mock_llm_repo = _make_use_case()
+        chunk = _make_chunk("Informacao relevante sobre o tema.")
+        use_case, _, mock_llm_repo = _make_use_case(search_results=[(chunk, 0.9)])
         use_case.execute("Qual o faturamento da empresa?")
         prompt_arg = mock_llm_repo.generate.call_args[0][0]
         assert "Qual o faturamento da empresa?" in prompt_arg

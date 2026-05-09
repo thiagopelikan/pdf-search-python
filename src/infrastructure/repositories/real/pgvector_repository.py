@@ -75,7 +75,11 @@ class PGVectorRepository(VectorRepository):
         return total
 
     def search(self, query: str, k: int) -> list[tuple[DocumentChunk, float]]:
-        """Busca os k chunks mais similares usando similarity_search_with_score."""
+        """Busca os k chunks mais similares usando similarity_search_with_score.
+
+        O score retornado e cosine similarity normalizado para [0, 1] (1 = identico),
+        convertido a partir da cosine distance retornada pelo pgVector (distance = 1 - similarity).
+        """
         raw_results = self._store.similarity_search_with_score(query, k=k)
         results = [
             (
@@ -84,7 +88,8 @@ class PGVectorRepository(VectorRepository):
                     page=doc.metadata.get("page", 0),
                     source=doc.metadata.get("source", ""),
                 ),
-                float(score),
+                # pgVector retorna cosine distance (0=identico, 2=oposto); converte para similarity
+                max(0.0, 1.0 - float(score)),
             )
             for doc, score in raw_results
         ]

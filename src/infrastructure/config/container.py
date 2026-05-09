@@ -77,6 +77,20 @@ class Container:
             from src.infrastructure.repositories.mock.mock_llm_repository import MockLLMRepository
             return MockLLMRepository()
 
+    def clear_all_vector_repositories(self) -> None:
+        """Limpa as colecoes de todos os providers conhecidos (openai e gemini)."""
+        if self._env != "production":
+            self.vector_repository().clear()
+            return
+
+        from src.infrastructure.repositories.real.pgvector_repository import PGVectorRepository
+
+        for provider, collection_name in _COLLECTION_NAMES.items():
+            embeddings = _build_embeddings_model(provider)
+            repo = PGVectorRepository(embeddings_model=embeddings, collection_name=collection_name)
+            repo.clear()
+            logger.info(f"Colecao '{collection_name}' ({provider}) limpa")
+
     def ingest_pdf_use_case(self) -> IngestPDF:
         """Monta e retorna o use case de ingestion com as dependencias corretas."""
         return IngestPDF(vector_repository=self.vector_repository())
