@@ -1,0 +1,40 @@
+name: CI - Homolog
+
+on:
+  push:
+    branches:
+      - homolog
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      # Usar development para rodar com mocks (sem necessidade de API keys reais no CI)
+      APP_ENV: development
+
+    steps:
+      - name: Checkout do repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Rodar todos os testes
+        # O pipeline aborta automaticamente se qualquer teste falhar (exit code != 0)
+        run: |
+          pytest tests/ -v --tb=short
+
+      - name: Confirmar deploy concluido
+        # Este step so executa se os testes passaram
+        run: |
+          echo "DEPLOY CONCLUIDO - Branch: homolog"
+          echo "Commit: ${{ github.sha }}"
+          echo "Autor: ${{ github.actor }}"

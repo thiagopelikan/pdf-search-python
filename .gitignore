@@ -1,0 +1,27 @@
+# Ambiente virtual Python
+venv/
+.venv/
+env/
+
+# Variaveis de ambiente com chaves reais
+.env
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# PDF de teste (o usuario adiciona o proprio)
+document.pdf
