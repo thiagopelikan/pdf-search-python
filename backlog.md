@@ -23,12 +23,12 @@ Todas as features derivadas de `docs/requirements.txt`. Marque o checkbox e regi
 | [x] | Container de DI em `src/infrastructure/config/container.py` | 2026-05-09 |
 | **Features Principais** | | |
 | [x] | Ingestion de PDF — chunking 1000 chars / overlap 150 | 2026-05-09 |
-| [ ] | Geracao de embeddings OpenAI (text-embedding-3-small) | — |
-| [ ] | Geracao de embeddings Gemini (models/embedding-001) | — |
-| [ ] | Armazenamento vetorial no pgVector | — |
+| [x] | Geracao de embeddings OpenAI (text-embedding-3-small) | 2026-05-09 |
+| [x] | Geracao de embeddings Gemini (models/gemini-embedding-001) | 2026-05-09 |
+| [x] | Armazenamento vetorial no pgVector | 2026-05-09 |
 | [x] | Busca semantica k=10 via similarity_search_with_score | 2026-05-09 |
 | [x] | CLI de chat interativo (`src/chat.py`) | 2026-05-09 |
-| [ ] | Resposta contextual via LLM (gpt-5-nano / gemini-2.5-flash-lite) | — |
+| [x] | Resposta contextual via LLM (gpt-5-nano / gemini-2.5-flash-lite) | 2026-05-09 |
 | [x] | Recusa de perguntas fora do contexto | 2026-05-09 |
 | **Prompts** | | |
 | [x] | Arquivo `prompts/search_prompt.txt` com template exato do enunciado | 2026-05-09 |
@@ -37,13 +37,13 @@ Todas as features derivadas de `docs/requirements.txt`. Marque o checkbox e regi
 | [x] | Testes unitarios do use case SearchContext | 2026-05-09 |
 | [x] | Testes unitarios das entidades de dominio | 2026-05-09 |
 | [x] | Testes de integracao dos repositorios mock | 2026-05-09 |
-| [ ] | Testes de integracao end-to-end (banco real via docker-compose) | — |
+| [x] | Testes de integracao end-to-end (banco real via docker-compose) | 2026-05-09 |
 | **CI/CD** | | |
 | [x] | GitHub Actions — workflow ci-homolog.yml (tests + deploy) | 2026-05-09 |
 | [x] | GitHub Actions — workflow ci-main.yml (tests + deploy) | 2026-05-09 |
-| [ ] | Branch develop criada no remote | — |
-| [ ] | Branch homolog criada no remote | — |
-| [ ] | Branch main configurada no remote | — |
+| [x] | Branch develop criada no remote | 2026-05-09 |
+| [x] | Branch homolog criada no remote | 2026-05-09 |
+| [x] | Branch main configurada no remote | 2026-05-09 |
 | [x] | Documentacao de branch strategy no README | 2026-05-09 |
 | **Documentacao** | | |
 | [x] | README.md com instrucoes de execucao | 2026-05-09 |

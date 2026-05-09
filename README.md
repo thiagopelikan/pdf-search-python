@@ -70,13 +70,13 @@ docker compose up -d
 ### 2. Ingerir o PDF
 
 ```bash
-python src/ingest.py
+make ingest
 ```
 
 Para especificar outro PDF:
 
 ```bash
-python src/ingest.py caminho/para/arquivo.pdf
+venv/bin/python src/ingest.py caminho/para/arquivo.pdf
 ```
 
 > **Nota:** cada provider usa sua propria colecao no pgVector (`pdf_search_chunks_openai` ou `pdf_search_chunks_gemini`). Se trocar de provider, rode a ingestion novamente.
@@ -84,7 +84,7 @@ python src/ingest.py caminho/para/arquivo.pdf
 ### 3. Rodar o chat interativo
 
 ```bash
-python src/chat.py
+make chat
 ```
 
 Exemplo de interacao:
@@ -104,7 +104,7 @@ PERGUNTA: sair
 ### 4. Busca avulsa (sem loop)
 
 ```bash
-python src/search.py "Qual o faturamento da empresa?"
+venv/bin/python src/search.py "Qual o faturamento da empresa?"
 ```
 
 ## Testes
@@ -112,23 +112,20 @@ python src/search.py "Qual o faturamento da empresa?"
 ### Testes unitarios e de integracao (sem dependencias externas)
 
 ```bash
-APP_ENV=development pytest tests/unit tests/integration -v
+make test
 ```
 
 Com relatorio de cobertura:
 
 ```bash
-APP_ENV=development pytest tests/unit tests/integration --cov=src --cov-report=term-missing
+APP_ENV=development PYTHONWARNINGS=ignore venv/bin/python -m pytest tests/unit tests/integration --cov=src --cov-report=term-missing
 ```
 
 ### Testes end-to-end (requerem Docker + API key)
 
 ```bash
-# Com OpenAI
-APP_ENV=production LLM_PROVIDER=openai pytest tests/e2e/ -m e2e -v
-
-# Com Gemini
-APP_ENV=production LLM_PROVIDER=gemini pytest tests/e2e/ -m e2e -v
+make test-e2e-openai   # com OpenAI
+make test-e2e-gemini   # com Gemini
 ```
 
 ### Smoke test (validacao rapida antes de release)
