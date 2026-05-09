@@ -5,6 +5,15 @@ Execucao: python src/search.py "Qual o faturamento da empresa?"
 
 import logging
 import sys
+import warnings
+from pathlib import Path
+
+# Garante que a raiz do projeto esteja no sys.path quando executado diretamente
+_project_root = str(Path(__file__).parent.parent)
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
+warnings.filterwarnings("ignore", module="urllib3")
 
 from dotenv import load_dotenv
 
