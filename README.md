@@ -2,11 +2,13 @@
 
 Busca semantica em PDFs usando LangChain, PostgreSQL e pgVector.
 
+O projeto le um PDF, divide o texto em chunks, gera embeddings via OpenAI ou Gemini e armazena no banco vetorial. O usuario faz perguntas via CLI e recebe respostas baseadas apenas no conteudo do PDF.
+
 ## Requisitos
 
 - Python 3.11+
 - Docker e Docker Compose
-- API Key da OpenAI ou Google (Gemini)
+- API Key da OpenAI **ou** Google (Gemini)
 
 ## Configuracao inicial
 
@@ -26,18 +28,36 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Editar `.env` com suas chaves:
+Edite `.env` com suas chaves. Os campos obrigatorios dependem do provider escolhido:
 
 ```env
 APP_ENV=production
-LLM_PROVIDER=openai
-OPENAI_API_KEY=sua_chave_aqui
+LLM_PROVIDER=openai          # ou gemini
+
+# OpenAI (quando LLM_PROVIDER=openai)
+OPENAI_API_KEY=sk-...
+
+# Gemini (quando LLM_PROVIDER=gemini)
+GOOGLE_API_KEY=AIza...
+
 POSTGRES_CONNECTION_STRING=postgresql+psycopg2://postgres:postgres@localhost:5432/pdf_search
 ```
 
-### 3. Adicionar o PDF
+Os demais parametros ja possuem valores padrao adequados:
 
-Copiar o PDF que deseja consultar para a raiz do projeto com o nome `document.pdf`.
+| Variavel | Padrao | Descricao |
+|---|---|---|
+| `CHUNK_SIZE` | 1000 | Tamanho de cada chunk em caracteres |
+| `CHUNK_OVERLAP` | 150 | Sobreposicao entre chunks |
+| `SEARCH_K` | 10 | Numero de resultados retornados na busca |
+| `OPENAI_LLM_MODEL` | gpt-5-nano | Modelo LLM OpenAI |
+| `OPENAI_EMBEDDING_MODEL` | text-embedding-3-small | Modelo de embeddings OpenAI |
+| `GEMINI_LLM_MODEL` | gemini-2.5-flash-lite | Modelo LLM Gemini |
+| `GEMINI_EMBEDDING_MODEL` | models/gemini-embedding-001 | Modelo de embeddings Gemini |
+
+### 3. PDF para ingestion
+
+O projeto inclui `document.pdf` de exemplo (empresa ficticia SuperTechIABrazil). Para usar um PDF proprio, substitua o arquivo `document.pdf` na raiz do projeto.
 
 ## Execucao
 
@@ -47,19 +67,21 @@ Copiar o PDF que deseja consultar para a raiz do projeto com o nome `document.pd
 docker compose up -d
 ```
 
-### 2. Executar a ingestion do PDF
+### 2. Ingerir o PDF
 
 ```bash
 python src/ingest.py
 ```
 
-Para usar um PDF especifico:
+Para especificar outro PDF:
 
 ```bash
-python src/ingest.py caminho/para/outro.pdf
+python src/ingest.py caminho/para/arquivo.pdf
 ```
 
-### 3. Rodar o chat
+> **Nota:** cada provider usa sua propria colecao no pgVector (`pdf_search_chunks_openai` ou `pdf_search_chunks_gemini`). Se trocar de provider, rode a ingestion novamente.
+
+### 3. Rodar o chat interativo
 
 ```bash
 python src/chat.py
@@ -75,68 +97,90 @@ RESPOSTA: O faturamento foi de 10 milhoes de reais.
 
 PERGUNTA: Qual a capital da Franca?
 RESPOSTA: Nao tenho informacoes necessarias para responder sua pergunta.
+
+PERGUNTA: sair
 ```
 
-Para sair, digitar `sair` ou pressionar `Ctrl+C`.
-
-## Busca avulsa
+### 4. Busca avulsa (sem loop)
 
 ```bash
 python src/search.py "Qual o faturamento da empresa?"
 ```
 
-## Rodando os testes
+## Testes
+
+### Testes unitarios e de integracao (sem dependencias externas)
 
 ```bash
-APP_ENV=development pytest tests/ -v
+APP_ENV=development pytest tests/unit tests/integration -v
 ```
 
 Com relatorio de cobertura:
 
 ```bash
-APP_ENV=development pytest tests/ --cov=src --cov-report=term-missing
+APP_ENV=development pytest tests/unit tests/integration --cov=src --cov-report=term-missing
 ```
 
-## Branch strategy
+### Testes end-to-end (requerem Docker + API key)
 
-| Branch | Ambiente | Implementacao |
-|--------|---------|--------------|
-| `develop` | development | Mock (sem banco, sem APIs) |
-| `homolog` | production | Real (pgVector + OpenAI/Gemini) |
-| `main` | production | Real (pgVector + OpenAI/Gemini) |
+```bash
+# Com OpenAI
+APP_ENV=production LLM_PROVIDER=openai pytest tests/e2e/ -m e2e -v
 
-Push em `homolog` ou `main` dispara o pipeline de CI/CD que roda todos os testes antes de finalizar o deploy.
+# Com Gemini
+APP_ENV=production LLM_PROVIDER=gemini pytest tests/e2e/ -m e2e -v
+```
 
-## Modelos suportados
+### Smoke test (validacao rapida antes de release)
 
-**OpenAI** (LLM_PROVIDER=openai):
-- Embeddings: text-embedding-3-small
-- LLM: gpt-5-nano
+```bash
+LLM_PROVIDER=openai ./scripts/smoke_test.sh
+```
 
-**Gemini** (LLM_PROVIDER=gemini):
-- Embeddings: models/embedding-001
-- LLM: gemini-2.5-flash-lite
+O script valida: Docker, PostgreSQL, PDF, ingestion, busca relevante e recusa de pergunta fora de contexto.
 
 ## Estrutura do projeto
 
 ```
+document.pdf          <- PDF de exemplo incluido no repositorio
 src/
-  domain/          <- regras de negocio (sem dependencias externas)
-    entities/      <- DocumentChunk
-    repositories/  <- interfaces VectorRepository, LLMRepository
-    use_cases/     <- IngestPDF, SearchContext
-  infrastructure/  <- implementacoes concretas
+  domain/             <- regras de negocio (sem dependencias externas)
+    entities/         <- DocumentChunk
+    repositories/     <- interfaces VectorRepository, LLMRepository
+    use_cases/        <- IngestPDF, SearchContext
+  infrastructure/     <- implementacoes concretas
     repositories/
-      mock/        <- sem banco, sem APIs (ambiente development)
-      real/        <- pgVector, OpenAI, Gemini (ambiente production)
+      mock/           <- sem banco, sem APIs (APP_ENV=development)
+      real/           <- pgVector, OpenAI, Gemini (APP_ENV=production)
     config/
-      container.py <- factory de DI
-  ingest.py        <- entry-point de ingestion
-  search.py        <- entry-point de busca avulsa
-  chat.py          <- entry-point de chat interativo
+      container.py    <- factory de DI — seleciona implementacoes por APP_ENV
+  ingest.py           <- entry-point de ingestion
+  search.py           <- entry-point de busca avulsa
+  chat.py             <- entry-point de chat interativo
 prompts/
-  search_prompt.txt <- template do prompt de busca
+  search_prompt.txt   <- template do prompt enviado ao LLM
 tests/
-  unit/            <- testes sem dependencias externas
-  integration/     <- testes com implementacoes mock
+  unit/               <- testes sem dependencias externas
+  integration/        <- testes com repositorios mock
+  e2e/                <- testes end-to-end com Docker e API real
+scripts/
+  smoke_test.sh       <- validacao completa do pipeline
 ```
+
+## Providers suportados
+
+**OpenAI** (`LLM_PROVIDER=openai`):
+- Embeddings: `text-embedding-3-small` (1536 dimensoes)
+- LLM: `gpt-5-nano`
+
+**Gemini** (`LLM_PROVIDER=gemini`):
+- Embeddings: `models/gemini-embedding-001` (768 dimensoes)
+- LLM: `gemini-2.5-flash-lite`
+
+## Branches
+
+| Branch | Descricao |
+|---|---|
+| `main` | Producao — CI roda todos os testes antes de aceitar o merge |
+| `homolog` | Homologacao — validacao pre-release |
+| `develop` | Desenvolvimento continuo |
