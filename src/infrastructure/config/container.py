@@ -29,13 +29,13 @@ def _build_embeddings_model(provider: str):
     if provider == "openai":
         from langchain_openai import OpenAIEmbeddings
         return OpenAIEmbeddings(
-            model="text-embedding-3-small",
+            model=os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
             api_key=os.environ["OPENAI_API_KEY"],
         )
     else:
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
         return GoogleGenerativeAIEmbeddings(
-            model="models/gemini-embedding-001",
+            model=os.environ.get("GEMINI_EMBEDDING_MODEL", "models/gemini-embedding-001"),
             google_api_key=os.environ["GOOGLE_API_KEY"],
         )
 

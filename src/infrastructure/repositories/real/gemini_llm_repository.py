@@ -9,8 +9,7 @@ from src.domain.repositories.llm_repository import LLMRepository
 
 logger = logging.getLogger(__name__)
 
-# Modelo sugerido pelo enunciado (pode ser substituido por outro Gemini disponivel)
-GEMINI_LLM_MODEL = "gemini-2.5-flash-lite"
+GEMINI_LLM_MODEL = os.environ.get("GEMINI_LLM_MODEL", "gemini-2.5-flash-lite")
 
 
 class GeminiLLMRepository(LLMRepository):

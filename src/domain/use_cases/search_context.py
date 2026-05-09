@@ -1,6 +1,7 @@
 """Caso de uso responsavel pela busca semantica e geracao de resposta."""
 
 import logging
+import os
 from pathlib import Path
 
 from src.domain.repositories.llm_repository import LLMRepository
@@ -8,8 +9,7 @@ from src.domain.repositories.vector_repository import VectorRepository
 
 logger = logging.getLogger(__name__)
 
-# Numero de resultados retornados pelo banco vetorial (fixado pelo enunciado)
-SEARCH_K = 10
+SEARCH_K = int(os.environ.get("SEARCH_K", "10"))
 
 # Caminho do template de prompt (relativo a raiz do projeto)
 _PROMPT_FILE = Path(__file__).parent.parent.parent.parent / "prompts" / "search_prompt.txt"

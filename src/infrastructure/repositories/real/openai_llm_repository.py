@@ -9,8 +9,7 @@ from src.domain.repositories.llm_repository import LLMRepository
 
 logger = logging.getLogger(__name__)
 
-# Modelo fixado pelo enunciado (docs/requirements.txt)
-OPENAI_LLM_MODEL = "gpt-5-nano"
+OPENAI_LLM_MODEL = os.environ.get("OPENAI_LLM_MODEL", "gpt-5-nano")
 
 
 class OpenAILLMRepository(LLMRepository):

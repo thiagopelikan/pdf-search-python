@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 from src.domain.entities.document_chunk import DocumentChunk
@@ -10,9 +11,8 @@ from src.domain.repositories.vector_repository import VectorRepository
 
 logger = logging.getLogger(__name__)
 
-# Parametros de chunking fixados pelo enunciado (docs/requirements.txt)
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 150
+CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE", "1000"))
+CHUNK_OVERLAP = int(os.environ.get("CHUNK_OVERLAP", "150"))
 
 
 class IngestPDF:
