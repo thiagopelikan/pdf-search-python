@@ -11,23 +11,33 @@ from src.domain.use_cases.search_context import SearchContext
 logger = logging.getLogger(__name__)
 
 
-def _build_embeddings_model():
-    """Instancia o modelo de embeddings conforme o provider configurado."""
+_COLLECTION_NAMES = {
+    "openai": "pdf_search_chunks_openai",
+    "gemini": "pdf_search_chunks_gemini",
+}
+
+
+def _get_provider() -> str:
     provider = os.environ.get("LLM_PROVIDER", "openai").lower()
+    if provider not in _COLLECTION_NAMES:
+        raise ValueError(f"LLM_PROVIDER invalido: '{provider}'. Use 'openai' ou 'gemini'.")
+    return provider
+
+
+def _build_embeddings_model(provider: str):
+    """Instancia o modelo de embeddings conforme o provider configurado."""
     if provider == "openai":
         from langchain_openai import OpenAIEmbeddings
         return OpenAIEmbeddings(
             model="text-embedding-3-small",
             api_key=os.environ["OPENAI_API_KEY"],
         )
-    elif provider == "gemini":
+    else:
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
         return GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001",
+            model="models/gemini-embedding-001",
             google_api_key=os.environ["GOOGLE_API_KEY"],
         )
-    else:
-        raise ValueError(f"LLM_PROVIDER invalido: '{provider}'. Use 'openai' ou 'gemini'.")
 
 
 class Container:
@@ -45,8 +55,10 @@ class Container:
         """Retorna a implementacao de VectorRepository para o ambiente atual."""
         if self._env == "production":
             from src.infrastructure.repositories.real.pgvector_repository import PGVectorRepository
-            embeddings = _build_embeddings_model()
-            return PGVectorRepository(embeddings_model=embeddings)
+            provider = _get_provider()
+            embeddings = _build_embeddings_model(provider)
+            collection_name = _COLLECTION_NAMES[provider]
+            return PGVectorRepository(embeddings_model=embeddings, collection_name=collection_name)
         else:
             from src.infrastructure.repositories.mock.mock_vector_repository import MockVectorRepository
             return MockVectorRepository()
@@ -54,7 +66,7 @@ class Container:
     def llm_repository(self) -> LLMRepository:
         """Retorna a implementacao de LLMRepository para o ambiente atual."""
         if self._env == "production":
-            provider = os.environ.get("LLM_PROVIDER", "openai").lower()
+            provider = _get_provider()
             if provider == "openai":
                 from src.infrastructure.repositories.real.openai_llm_repository import OpenAILLMRepository
                 return OpenAILLMRepository()
