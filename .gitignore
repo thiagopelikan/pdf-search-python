@@ -19,6 +19,9 @@ htmlcov/
 .vscode/
 *.swp
 
+# Claude Code — configuracoes locais de permissao
+.claude/settings.local.json
+
 # Sistema operacional
 .DS_Store
 Thumbs.db
