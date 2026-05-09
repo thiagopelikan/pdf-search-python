@@ -23,5 +23,5 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# PDF de teste (o usuario adiciona o proprio)
-document.pdf
+# Documentos pessoais do usuario (PDFs proprios, etc)
+Docs/
